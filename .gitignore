@@ -32,3 +32,6 @@
 
 # Ignore master key for decrypting credentials and more.
 /config/master.key
+
+# This asset file was paid for
+app/assets/images/sofu_playing_cards_pack

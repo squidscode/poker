@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Poker Clone</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Gabriela&display=swap" rel="stylesheet">
+    <style>
+      body {
+        font-family: "Gabriela", sans-serif;
+        font-weight: 400;
+        font-style: normal;
+      }
+    </style>
+
+   <%= stylesheet_link_tag 'game.css' %>
+  </head>
+  <body>
+    <% if @in_lobby %>
+      <h3>Request to join game:</h3>
+      <%= form_with url: "/player" do |form| %>
+        <div>
+          <%= form.label :player_name %>
+          <%= form.text_field :name %>
+          <%= form.submit "Submit" %>
+        </div>
+      <% end %>
+    <% end %>
+
+    <div class="game-container">
+      <div class="hud">
+        <div class="currency">$<%= @game.pot %></div>
+        <div class="round-info">Blind: Small</div>
+      </div>
+
+      <% if @is_admin %>
+        <%= render "admin" %>
+      <% end %>
+      
+      <div class="player-hand">
+        <% if @game.community_cards 
+           @game.community_cards.split(",").each do |card| %>
+            <%= image_tag card_src(card)  %>
+        <% end end %>
+      </div>
+
+      <% @players.each do |player| %>
+        <div class="player-hand">
+          <p><%= player.name %> : <%= player.chips %></p>
+          <% if player.hole_cards
+               for i in 1..(player.hole_cards.count(",") + 1) do %>
+                  <%= image_tag(back) %>
+          <%   end
+             end %>
+        </div>
+      <% end %>
+    </div>
+  </body>
+</html>
+

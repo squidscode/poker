@@ -5,10 +5,20 @@ Rails.application.routes.draw do
   # Can be used by load balancers and uptime monitors to verify that the app is live.
   get "up" => "rails/health#show", as: :rails_health_check
 
+  # ----- GAMES -----
+  post "/game", to: "games#create"         # Create
+  get "/games", to: "games#index"          # Read
+  get "/game/:id", to: "games#show"        # Read
+  patch "/game/:id", to: "games#update"    # Update game config (i.e. add player...)
+  put "/game/:id", to: "games#update"      # Update ...
+  delete "/game/:id", to: "games#destroy"  # Delete
+
+  post "/player", to: "players#create"
+  delete "/player", to: "players#destroy"
+
   # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
   # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
-  # Defines the root path route ("/")
-  # root "posts#index"
+  root "games#index"
 end

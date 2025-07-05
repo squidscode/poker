@@ -1,0 +1,22 @@
+<h1> Admin Panel </h1>
+
+<table>
+  <% 
+    @players.each do |player|
+      if player.id == @player.id
+        next
+      end
+    %>
+    <tr>
+      <td><%= player.name %></td>
+      <td><%= button_to "Remove", html_options: {method: :delete} %></td>
+    </tr>
+  <% end %>
+
+  <% @player_requests.each do |pr| %>
+    <tr>
+      <td><%= pr.name %></td>
+      <td><%= button_to "Remove", html_options: {method: :delete} %></td>
+    </tr>
+  <% end %>
+</table>
