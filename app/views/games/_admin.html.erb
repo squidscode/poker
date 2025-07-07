@@ -3,7 +3,7 @@
 <table>
   <% 
     @players.each do |player|
-      if player.id == @player.id
+      if @is_player && player.id == @player.id
         next
       end
     %>
@@ -16,7 +16,22 @@
   <% @player_requests.each do |pr| %>
     <tr>
       <td><%= pr.name %></td>
-      <td><%= button_to "Remove", html_options: {method: :delete} %></td>
+      <td>
+        <%= form_with url: "/player_request" do |form| %>
+          <input type="hidden" name="player_request_id" value="<%= pr.id %>">
+          <%= form.submit "Approve", html_options: {method: :create} %>
+        <% end %>
+      </td>
+      <td>
+        <%= form_with url: "/player_request" do |form| %>
+          <input type="hidden" name="player_request_id" value="<%= pr.id %>">
+          <%= form.submit "Deny", html_options: {method: :delete} %>
+        <% end %>
+      </td>
     </tr>
+  <% end %>
+
+  <%= form_with url: "/games/#{@game.id}", method: :patch do |form| %>
+    <%= form.submit "Start Game" %>
   <% end %>
 </table>

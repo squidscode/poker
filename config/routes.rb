@@ -6,15 +6,18 @@ Rails.application.routes.draw do
   get "up" => "rails/health#show", as: :rails_health_check
 
   # ----- GAMES -----
-  post "/game", to: "games#create"         # Create
+  post "/games", to: "games#create"         # Create
   get "/games", to: "games#index"          # Read
-  get "/game/:id", to: "games#show"        # Read
-  patch "/game/:id", to: "games#update"    # Update game config (i.e. add player...)
-  put "/game/:id", to: "games#update"      # Update ...
-  delete "/game/:id", to: "games#destroy"  # Delete
+  get "/games", to: "games#index"           # Read
+  get "/games/:id", to: "games#show"        # Read
+  patch "/games/:id", to: "games#update"    # Update game config (i.e. add player...)
+  put "/games/:id", to: "games#update"      # Update ...
+  delete "/games/:id", to: "games#destroy"  # Delete
 
   post "/player", to: "players#create"
   delete "/player", to: "players#destroy"
+  post "/player_request", to: "players#approve"
+  delete "/player_request", to: "players#deny"
 
   # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
   # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest

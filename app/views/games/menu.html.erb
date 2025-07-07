@@ -10,12 +10,13 @@
         font-style: normal;
       }
     </style>
+    <%= stylesheet_link_tag 'game.css' %>
   </head>
 
   <body>
     <h1>Here are all the games</h1>
 
-    <%= form_with url: "/game" do |form| %>
+    <%= form_with url: "/games" do |form| %>
       <div>
         <%= form.label :game_name %>
         <%= form.text_field :name %>
@@ -27,7 +28,7 @@
 
     <br>
     <% @games.each do |game| %>
-      <a href="/game/<%= game.id %>" color="white">
+      <a href="/games/<%= game.id %>" color="white">
         <%= game.name %>
       </a>
       <br>

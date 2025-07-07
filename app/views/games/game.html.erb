@@ -13,20 +13,25 @@
         font-style: normal;
       }
     </style>
-
-   <%= stylesheet_link_tag 'game.css' %>
+    <%= stylesheet_link_tag 'game.css' %>
   </head>
   <body>
-    <% if @in_lobby %>
+    <% if @in_lobby && !@is_player && !@is_admin %>
       <h3>Request to join game:</h3>
       <%= form_with url: "/player" do |form| %>
         <div>
           <%= form.label :player_name %>
           <%= form.text_field :name %>
+          <input type="hidden" name="game_id" value="<%= @game.id %>">
           <%= form.submit "Submit" %>
         </div>
       <% end %>
     <% end %>
+
+    <% if @is_admin %>
+      <%= render "admin" %>
+    <% end %>
+      
 
     <div class="game-container">
       <div class="hud">
@@ -34,10 +39,6 @@
         <div class="round-info">Blind: Small</div>
       </div>
 
-      <% if @is_admin %>
-        <%= render "admin" %>
-      <% end %>
-      
       <div class="player-hand">
         <% if @game.community_cards 
            @game.community_cards.split(",").each do |card| %>
@@ -45,12 +46,33 @@
         <% end end %>
       </div>
 
+      <% if @is_active_player %>
+        <%= form_with url: "/games/#{@game.id}", method: :patch do |form| %>
+          <%= form.number_field :bet %>
+          <%= form.hidden_field :game_id, value: @game.id %>
+          <%= form.submit "Bet" %>
+          <%= form.submit "Fold" %>
+        <% end %>
+      <% end %>
+
       <% @players.each do |player| %>
         <div class="player-hand">
-          <p><%= player.name %> : <%= player.chips %></p>
+          <p>
+          <%= 
+            if player.id == @game.active_player 
+             "★"
+            end
+          %>
+          <%= player.name %> : <%= player.chips %> : <%= player.bet %></p>
           <% if player.hole_cards
-               for i in 1..(player.hole_cards.count(",") + 1) do %>
-                  <%= image_tag(back) %>
+               player.hole_cards.split(",") do |card| %>
+               <%= 
+                  if player.auth_token == cookies[:player_auth_token]
+                    image_tag card_src(card)
+                  else
+                    image_tag(back)
+                  end 
+                %>
           <%   end
              end %>
         </div>
