@@ -1,5 +1,7 @@
 require "thread"
 
+include GamesHelper
+
 BUY_IN = 1000
 BIG_BLIND = BUY_IN / 100
 
@@ -20,8 +22,6 @@ class Game < ApplicationRecord
   has_many :players
   has_many :player_requests
 
-  attr_accessor :raise_opportunities
-
   def self.new(**kwargs)
     super(deck:self.initial_deck().join(","), **kwargs)
   end
@@ -35,6 +35,15 @@ class Game < ApplicationRecord
     end
     return a.shuffle()
   end
+  
+=begin
+  A big issue with the play_game function right now, is that it 
+  uses a thread to suspend a the game while waiting for clients 
+  to make their moves.
+
+  TODO: add the state of the game to the SQL database so that we don't need to 
+  use threads to suspend the function.
+=end
 
   def play_game
     GAME_MUTEX[self.id] = Mutex.new
@@ -54,7 +63,8 @@ class Game < ApplicationRecord
     # Initialize the game
     self.deck = Game.initial_deck().join(",")
     self.set_dealer(self.player_ids)
-    self.set_active_player(self.player_ids, self.dealer)
+    self.set_active_player(self.player_ids)
+    self.pot = 0
 
     # Deal the hole cards
     self.deal_hole_cards()
@@ -69,15 +79,24 @@ class Game < ApplicationRecord
     self.active_player = 0
     self.save()
 
-    # Determine payout
-    # TODO
+    # Determine and give payout
+    hole_cards = players.map {|player| player.hole_cards}
+    winning_player_indices = winners(self.community_cards, hole_cards)
+    puts "Winners for game ##{self.id}: #{winning_player_indices}"
+    winning_player_indices.each do |i|
+      self.players[i].chips += self.pot / winning_player_indices.length
+      self.players[i].save
+    end
 
+    self.pot = 0
     self.save()
   end
 
-  def set_active_player(player_ids, dealer)
+  def set_active_player(player_ids)
+    puts "player_ids: #{player_ids}"
+    puts "dealer: #{self.dealer}"
     self.active_player = player_ids[
-      (player_ids.index(dealer) + 3) % player_ids.length
+      (player_ids.index(self.dealer) + 3) % player_ids.length
     ]
   end
 
@@ -86,9 +105,7 @@ class Game < ApplicationRecord
     if self.dealer == nil
       self.dealer = player_ids[0]
     else
-      p = player_ids.index(self.dealer)
-      p += 1
-      p %= player_ids.length
+      p = (player_ids.index(self.dealer) + 1) % player_ids.length
       self.dealer = player_ids[p]
     end
   end
@@ -96,6 +113,7 @@ class Game < ApplicationRecord
   def deal_hole_cards()
     self.players.each do |player|
       player.hole_cards = self.shift_cards_from_deck(2)
+      player.fold = 0
       player.save
     end
     self.save
@@ -149,9 +167,12 @@ class Game < ApplicationRecord
     # Loop until entire circle of betting with 
     # ~no raising~ has happened
     while self.raise_opportunities > 0
-      ActionCable.server.broadcast("game_#{self.id}", {action: "reload"})
+      self.broadcast_change()
 
-      self.pause()
+      if self.players[active_player_index].fold == 0
+        self.pause()
+        self.reload
+      end
 
       active_player_index = (active_player_index + 1) % n
       self.active_player = self.player_ids[active_player_index]
@@ -159,8 +180,20 @@ class Game < ApplicationRecord
       self.save
     end
 
+    self.players.each do |player|
+      self.pot += player.bet
+      player.bet = 0
+      player.save
+    end
+
+    self.save()
+    self.broadcast_change()
+  end
+
+  def broadcast_change
     ActionCable.server.broadcast("game_#{self.id}", {action: "reload"})
   end
+
 
   def pause
     GAME_MUTEX[self.id].synchronize {
@@ -179,19 +212,35 @@ class Game < ApplicationRecord
   end
 
   def raise(player, raise_amount)
-    if raise_amount <= player.chips # if valid
+    if self.players == nil
+      self.players = Player.where(game_id: self.id)
+    end
+
+    max_bet = 0
+    self.players.each do |players|
+      max_bet = [players.bet, max_bet].max
+    end
+
+    if max_bet <= player.chips + raise_amount && raise_amount <= player.chips # if valid
       player.chips -= raise_amount
       player.bet   += raise_amount
-      self.pot     += raise_amount
-
       player.save
-      self.raise_opportunities = self.players.length
-    else                            # else if invalid
+
+      if max_bet < raise_amount
+        self.raise_opportunities = self.players.length
+      end
+
+      self.save
+
+      return true
+    else # else if invalid
       puts "TODO: DO SOMETHING!"
+      return false
     end
   end
 
   def fold(player)
-    puts "TODO: implement this!"
+    player.fold = 1
+    player.save
   end
 end

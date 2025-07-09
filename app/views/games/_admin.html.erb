@@ -9,7 +9,12 @@
     %>
     <tr>
       <td><%= player.name %></td>
-      <td><%= button_to "Remove", html_options: {method: :delete} %></td>
+      <td>
+        <%= form_with url: "/player", method: :delete do |form| %>
+          <input type="hidden" name="player_id" value="<%= player.id %>">
+          <%= form.submit "Delete" %>
+        <% end %>
+      </td>
     </tr>
   <% end %>
 
@@ -17,15 +22,15 @@
     <tr>
       <td><%= pr.name %></td>
       <td>
-        <%= form_with url: "/player_request" do |form| %>
+        <%= form_with url: "/player_request", method: :post do |form| %>
           <input type="hidden" name="player_request_id" value="<%= pr.id %>">
-          <%= form.submit "Approve", html_options: {method: :create} %>
+          <%= form.submit "Approve" %>
         <% end %>
       </td>
       <td>
-        <%= form_with url: "/player_request" do |form| %>
+        <%= form_with url: "/player_request", method: :delete do |form| %>
           <input type="hidden" name="player_request_id" value="<%= pr.id %>">
-          <%= form.submit "Deny", html_options: {method: :delete} %>
+          <%= form.submit "Deny" %>
         <% end %>
       </td>
     </tr>

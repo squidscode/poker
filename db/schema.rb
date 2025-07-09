@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_07_06_044901) do
+ActiveRecord::Schema[8.0].define(version: 2025_07_07_203336) do
   create_table "games", force: :cascade do |t|
     t.string "auth_token"
     t.string "name"
@@ -22,6 +22,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_06_044901) do
     t.string "deck"
     t.integer "bet"
     t.integer "dealer"
+    t.integer "raise_opportunities"
   end
 
   create_table "player_requests", force: :cascade do |t|
@@ -43,6 +44,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_06_044901) do
     t.integer "game_id", null: false
     t.string "auth_token"
     t.integer "bet"
+    t.integer "fold"
     t.index ["auth_token"], name: "index_players_on_auth_token", unique: true
     t.index ["game_id"], name: "index_players_on_game_id"
   end

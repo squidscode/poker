@@ -1,5 +1,7 @@
 ACTIVE_GAMES = {}
 
+include GamesHelper
+
 class GamesController < ApplicationController
   def create
     if params[:action] == "create"
@@ -7,7 +9,7 @@ class GamesController < ApplicationController
       player_name = params[:player_name]
       token = params[:authenticity_token]
       @game = Game.new(name:game_name, active_player:0, pot:0); @game.save
-      player = Player.new(name:player_name, game_id:@game.id, chips:BUY_IN)
+      player = Player.new(name:player_name, game_id:@game.id, chips:BUY_IN, fold:0)
       if !@game.save || !player.save
         # an error happened
         print(@game.errors.full_messages)
@@ -42,6 +44,7 @@ class GamesController < ApplicationController
     @is_player = @player != nil
     @is_active_player = self.is_active_player?
 
+
     if @game.pot == 0 \
       && (@game.community_cards == "" || @game.community_cards == nil)
       @in_lobby = true
@@ -53,7 +56,21 @@ class GamesController < ApplicationController
       @player_requests = PlayerRequest.where(game_id:@game.id)
     end
 
-    render "game"
+    if @is_active_player && @player.bet != nil
+      max_bet = @players
+        .map {|player| player.bet}
+        .max(1)[0]
+      puts "max_bet: #{max_bet}"
+      puts "player.bet: #{@player.bet}"
+      @min_raise = max_bet - @player.bet
+    end
+
+    puts params
+    if params[:reload].nil? then
+      render "game"
+    else
+      render "_game_board", layout: false
+    end
   end
 
   def update
@@ -61,12 +78,14 @@ class GamesController < ApplicationController
     @players = Player.where(game_id:params[:id])
     is_admin = cookies[:game_auth_token] == @game.auth_token
     active_player = @game.active_player == 0 ? nil : Player.find(@game.active_player)
+
     if params[:commit] == "Start Game" && is_admin && @players.length > 1
       get_active_game(params[:id]).play_game()
-    elsif params[:commit] == "Bet" && self.is_active_player?
-      bet = Integer(params[:bet])
-      @game.raise(active_player, bet)
-      get_active_game(params[:id]).unpause()
+    elsif params[:commit] == "Raise" && self.is_active_player?
+      raise = Integer(params[:raise])
+      if @game.raise(active_player, raise)
+        get_active_game(params[:id]).unpause()
+      end
     elsif params[:commit] == "Fold" && self.is_active_player?
       @game.fold(active_player)
       get_active_game(params[:id]).unpause()
