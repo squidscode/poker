@@ -54,6 +54,7 @@ class GamesController < ApplicationController
 
     if @is_admin
       @player_requests = PlayerRequest.where(game_id:@game.id)
+      @player_requests ||= []
     end
 
     if @is_active_player && @player.bet != nil
@@ -68,8 +69,10 @@ class GamesController < ApplicationController
     puts params
     if params[:reload].nil? then
       render "game"
-    else
+    elsif params[:page] == "game-board" then
       render "_game_board", layout: false
+    elsif params[:page] == "admin-pannel" then
+      render "_admin", layout: false
     end
   end
 

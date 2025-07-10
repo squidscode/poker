@@ -12,7 +12,7 @@
       <td>
         <%= form_with url: "/player", method: :delete do |form| %>
           <input type="hidden" name="player_id" value="<%= player.id %>">
-          <%= form.submit "Delete" %>
+          <%= form.submit "Kick" %>
         <% end %>
       </td>
     </tr>
