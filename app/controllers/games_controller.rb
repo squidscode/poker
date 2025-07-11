@@ -39,7 +39,7 @@ class GamesController < ApplicationController
       auth_token:cookies[:player_auth_token]
     ).limit(1)[0]
 
-    # Used for selectively rendering things
+    # Used for selectively rendering parts of the page
     @is_admin = cookies[:game_auth_token] == @game.auth_token
     @is_player = @player != nil
     @is_active_player = self.is_active_player?
@@ -52,9 +52,9 @@ class GamesController < ApplicationController
       @in_lobby = false
     end
 
+    @player_requests = []
     if @is_admin
       @player_requests = PlayerRequest.where(game_id:@game.id)
-      @player_requests ||= []
     end
 
     if @is_active_player && @player.bet != nil

@@ -1,42 +1,23 @@
-<h1> Admin Panel </h1>
+<div class="fixed right-2 top-2">
+  <div class="grid grid-cols-2">
 
-<table>
-  <% 
-    @players.each do |player|
-      if @is_player && player.id == @player.id
-        next
-      end
-    %>
-    <tr>
-      <td><%= player.name %></td>
-      <td>
-        <%= form_with url: "/player", method: :delete do |form| %>
-          <input type="hidden" name="player_id" value="<%= player.id %>">
-          <%= form.submit "Kick" %>
-        <% end %>
-      </td>
-    </tr>
-  <% end %>
+    <div class="navbar">
+      <div class="dropdown">
+        <div class="dropbtn p-2 m-2 outline-2 bg-gray-700 hover:bg-gray-500 
+                       outline-gray-500 rounded-lg">
+          Admin
+        </div>
+        <div class="dropdown-content p-2 rounded-lg">
+          <%= render "player_request_table" %>
+        </div>
+      </div>
+    </div> 
 
-  <% @player_requests.each do |pr| %>
-    <tr>
-      <td><%= pr.name %></td>
-      <td>
-        <%= form_with url: "/player_request", method: :post do |form| %>
-          <input type="hidden" name="player_request_id" value="<%= pr.id %>">
-          <%= form.submit "Approve" %>
-        <% end %>
-      </td>
-      <td>
-        <%= form_with url: "/player_request", method: :delete do |form| %>
-          <input type="hidden" name="player_request_id" value="<%= pr.id %>">
-          <%= form.submit "Deny" %>
-        <% end %>
-      </td>
-    </tr>
-  <% end %>
+    <%= form_with url: "/games/#{@game.id}", method: :patch do |form| %>
+      <%= form.submit "Start Game",
+        class: "p-2 m-2 outline-2 bg-cyan-700 hover:bg-cyan-500 outline-cyan-500 
+    rounded-lg cursor-pointer" %>
+<% end %>
+  </div>
 
-  <%= form_with url: "/games/#{@game.id}", method: :patch do |form| %>
-    <%= form.submit "Start Game" %>
-  <% end %>
-</table>
+</div>

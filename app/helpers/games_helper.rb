@@ -28,7 +28,7 @@ module GamesHelper
 
 
   # Returns the index of the winner
-  def winners(community_cards, hole_cards)
+  def get_winners(community_cards, hole_cards)
     community_cards = community_cards.split(",")
     hole_cards = hole_cards.map {|hc| hc.split(",")}
     if (winners = royal_flush(community_cards, hole_cards)) != []

@@ -14,24 +14,26 @@
   </head>
 
   <body>
-    <h1>Here are all the games</h1>
+    <div class="grid grid-cols-1">
+      <h1>Here are all the games</h1>
 
-    <%= form_with url: "/games" do |form| %>
-      <div>
-        <%= form.label :game_name %>
-        <%= form.text_field :name %>
-        <%= form.label :player_name %>
-        <%= form.text_field :player_name %>
-        <%= form.submit %>
-      </div>
-    <% end %>
+      <%= form_with url: "/games" do |form| %>
+        <div>
+          <%= form.label :game_name %>
+          <%= form.text_field :name, class: "bg-white text-black" %>
+          <%= form.label :player_name %>
+          <%= form.text_field :player_name, class: "bg-white text-black" %>
+          <%= form.submit "Save", 
+            class: "hover:bg-green-500 outline-3 outline-green-500 bg-green-700
+                    rounded-lg p-1 cursor-pointer" %>
+        </div>
+      <% end %>
 
-    <br>
-    <% @games.each do |game| %>
-      <a href="/games/<%= game.id %>" color="white">
-        <%= game.name %>
-      </a>
-      <br>
-    <% end %>
+      <% @games.each do |game| %>
+        <a href="/games/<%= game.id %>" color="white">
+          <%= game.name %>
+        </a>
+      <% end %>
+    </div>
   </body>
 </html>

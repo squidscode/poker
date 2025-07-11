@@ -59,6 +59,7 @@ class Game < ApplicationRecord
     self.players = Player.where(game_id: self.id)
     self.player_ids = self.players.map {|player| player.id}
     self.community_cards = nil
+    self.winners = nil
 
     # Initialize the game
     self.deck = Game.initial_deck().join(",")
@@ -81,7 +82,7 @@ class Game < ApplicationRecord
 
     # Determine and give payout
     hole_cards = players.map {|player| player.hole_cards}
-    winning_player_indices = winners(self.community_cards, hole_cards)
+    winning_player_indices = get_winners(self.community_cards, hole_cards)
     puts "Winners for game ##{self.id}: #{winning_player_indices}"
     winning_player_indices.each do |i|
       self.players[i].chips += self.pot / winning_player_indices.length
@@ -89,6 +90,9 @@ class Game < ApplicationRecord
     end
 
     self.pot = 0
+    self.winners = winning_player_indices
+      .map {|i| self.players[i].id}
+      .join(",")
     self.save()
   end
 

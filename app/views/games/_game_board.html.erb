@@ -1,43 +1,81 @@
-<div class="hud">
-  <div class="currency">$<%= @game.pot %></div>
-  <div class="round-info">Blind: Small</div>
-</div>
+<div class="w-250 grid grid-cols-2 place-content-center flex-auto">
 
-<div class="player-hand flex hidden">
-  <% if @game.community_cards 
-       @game.community_cards.split(",").each do |card| %>
-       <%= image_tag card_src(card)  %>
-       <% end end %>
-</div>
+  <%# The game status %>
+  <div class="w-100 grid grid-cols-1 place-content-center outline-5 shadow-xl
+              bg-green-950 outline-gray-800 rounded-lg p-5">
+    <div class="p-2 flex-auto grid grid-cols-2">
+      <div class="currency">$<%= @game.pot %></div>
+      <div class="round-info text-right">Blind: Small</div>
+    </div>
 
-<% if @is_active_player && @player.bet != nil %>
-  <%= form_with url: "/games/#{@game.id}", method: :patch do |form| %>
-    <%= form.number_field :raise, in:@min_raise..@player.chips,
-      step:1, value:@min_raise %>
-    <%= form.hidden_field :game_id, value: @game.id %>
-    <%= form.submit "Raise" %>
-    <%= form.submit "Fold" %>
-  <% end %>
-<% end %>
+    <% if @is_player %>
+      <div class="p-2 grid place-content-center min-h-15">
+        <% if @is_active_player && @player.bet != nil %>
+          <%= form_with url: "/games/#{@game.id}", method: :patch,
+              class: "place-content-center flex-auto" do |form| %>
+            <%= form.number_field :raise, in:@min_raise..@player.chips,
+              step:1, value:@min_raise, class: "rounded-lg p-1 bg-white text-black
+                                                outline-3 outline-neutral-500" %>
+            <%= form.hidden_field :game_id, value: @game.id %>
+            <%= form.submit "Raise",
+              class: "p-2 outline-2 bg-red-700 hover:bg-red-500 outline-red-500 
+                      rounded-lg cursor-pointer" %>
+            <%= form.submit "Fold",
+              class: "p-2 outline-2 bg-cyan-700 hover:bg-cyan-500 outline-cyan-500 
+                      rounded-lg cursor-pointer" %>
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
 
-<% @players.each do |player| %>
-  <div>
-    <p>
-    <%= if player.id == @game.dealer; "[DEALER]"; end %>
-      <%= if player.fold != 0; "[FOLD]"; end %>
-        <b> ★ <%= player.name %> </b> <br>
-        CHIPS: <%= player.chips %> <br>
-        BET: <%= player.bet %></p>
-    <% if player.hole_cards
-         player.hole_cards.split(",") do |card| %>
-         <%= 
-           if player.auth_token == cookies[:player_auth_token]
-             image_tag card_src(card)
-           else
-             image_tag(back)
-           end 
-         %>
-     <%   end
-    end %>
+
+    <% @players.each do |player| %>
+      <div class="flex-auto w-90 grid grid-cols-2 place-content-center rounded-lg
+        <%= if player.id == @game.active_player then "bg-yellow-500" end %>
+        <%= 
+          winner_ids = @game.winners 
+          winner_ids ||= ""
+          winner_ids = winner_ids.split(",").map {|s| Integer(s)}
+          if winner_ids.include?(player.id) then "text-yellow-500" end %>">
+        <p class="flex-auto w-50 p-4
+          <%= if player.fold == 1 then "text-gray-500" end %>
+          <%= if player.id == @game.active_player then "text-black" end %>">
+          <b>
+            <%= if player.id == @game.dealer; "Ⓓ"; end %>
+            <%= player.name %> 
+          </b> <br>
+              CHIPS: <%= player.chips %> <br>
+              BET: <%= player.bet %>
+        </p>
+        <div class="grid grid-cols-2 w-30 place-content-center flex">
+          <% if player.hole_cards
+               player.hole_cards.split(",") do |card| %>
+               <%= 
+               if (player.auth_token == cookies[:player_auth_token] \
+                   || (!@game.winners.nil? && player.fold == 0))
+                 image_tag card_src(card), class: "card"
+               else
+                 image_tag back, class: "card"
+               end 
+             %>
+         <%   end
+          end %>
+        </div>
+      </div>
+    <% end %>
   </div>
-<% end %>
+
+  <%# The river cards %>
+  <div class="w-120 grid place-content-center flex-auto
+              grid-cols-5">
+    <% if @game.community_cards 
+         @game.community_cards.split(",").each do |card| %>
+         <%= image_tag card_src(card), class: "object-contain w-20 card"  %>
+         <% end end %>
+ <% divs = @game.community_cards.nil? ? 5 : (5 - @game.community_cards.split(",").length)
+     for i in 1..divs do %>
+      <div class="w-20"></div>
+    <% end %>
+  </div>
+
+</div>

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_07_09_174049) do
+ActiveRecord::Schema[8.0].define(version: 2025_07_10_203138) do
   create_table "games", force: :cascade do |t|
     t.string "auth_token"
     t.string "name"
@@ -23,6 +23,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_09_174049) do
     t.integer "bet"
     t.integer "dealer"
     t.integer "raise_opportunities"
+    t.string "winners"
   end
 
   create_table "player_requests", force: :cascade do |t|

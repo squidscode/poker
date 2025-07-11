@@ -1,0 +1,43 @@
+<table>
+  <% 
+      @players.each do |player|
+        if @is_player && player.id == @player.id
+          next
+        end
+      %>
+    <tr>
+      <td><%= player.name %></td>
+      <td>
+        <%= form_with url: "/player", method: :delete do |form| %>
+          <input type="hidden" name="player_id" value="<%= player.id %>">
+          <%= form.submit "Kick",
+            class: "p-2 m-2 outline-2 bg-red-700 hover:bg-red-500 outline-red-500 
+            rounded-lg cursor-pointer" %>
+        <% end %>
+      </td>
+    </tr>
+  <% end %>
+
+  <% @player_requests.each do |pr| %>
+    <tr>
+      <td><%= pr.name %></td>
+      <td>
+        <%= form_with url: "/player_request", method: :post do |form| %>
+          <input type="hidden" name="player_request_id" value="<%= pr.id %>">
+          <%= form.submit "Approve",
+            class: "p-2 m-2 outline-2 bg-green-700 hover:bg-green-500 outline-green-500 
+            rounded-lg cursor-pointer" %>
+        <% end %>
+      </td>
+      <td>
+        <%= form_with url: "/player_request", method: :delete do |form| %>
+          <input type="hidden" name="player_request_id" value="<%= pr.id %>">
+          <%= form.submit "Deny",
+            class: "p-2 m-2 outline-2 bg-red-700 hover:bg-red-500 outline-red-500 
+            rounded-lg cursor-pointer" %>
+        <% end %>
+      </td>
+    </tr>
+  <% end %>
+
+</table>
